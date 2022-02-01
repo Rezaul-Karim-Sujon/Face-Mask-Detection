@@ -8,7 +8,7 @@ import imutils
 import time
 import cv2
 import os
-
+fps =0.00
 def detect_and_predict_mask(frame, faceNet, maskNet):
 	# grab the dimensions of the frame and then construct a blob
 	# from it
@@ -16,9 +16,16 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
 	blob = cv2.dnn.blobFromImage(frame, 1.0, (224, 224),
 		(104.0, 177.0, 123.0))
 
+	#start time to calculate FPS
+	start=time.time()
+
 	# pass the blob through the network and obtain the face detections
 	faceNet.setInput(blob)
 	detections = faceNet.forward()
+	#end time after detecton
+	end=time.time()
+	global fps
+	fps=1/(end-start)
 	print(detections.shape)
 
 	# initialize our list of faces, their corresponding locations,
@@ -75,7 +82,6 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
 prototxtPath = r"D:\Education\8 th\Thesis\Demo\Face-Mask-Detection\face_detector\deploy.prototxt"
 weightsPath = r"D:\Education\8 th\Thesis\Demo\Face-Mask-Detection\face_detector\res10_300x300_ssd_iter_140000.caffemodel"
 faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
-
 # load the face mask detector model from disk
 maskNet = load_model("mask_detector.model")
 
@@ -114,6 +120,8 @@ while True:
 		cv2.putText(frame, label, (startX, startY - 10),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
 		cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+		#put the FPS text on top of the frame
+		cv2.putText(frame,f"{fps:.2f} FPS", (20,30),cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
 
 	# show the output frame
 	cv2.imshow("Frame", frame)
